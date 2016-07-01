@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Quotes</string>
+    <string name="action_settings">Settings</string>
+    
+    <string name="quotesondesign_url">http://www.quotesondesign.com</string>
+    <string name="theyssaidso_url">http://quotes.rest</string>
+    <string name="forismatic_url">http://api.forismatic.com</string>
+</resources>
