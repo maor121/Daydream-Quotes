@@ -2,6 +2,7 @@ package quote.com.quotes.utils;
 
 import android.content.Context;
 import android.graphics.PixelFormat;
+import android.hardware.Camera;
 import android.util.Log;
 import android.view.WindowManager;
 
@@ -10,6 +11,8 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+
+import java.lang.reflect.Method;
 
 /**
  * Created by Maor on 24/06/2016.
@@ -52,8 +55,8 @@ public class BackgroundCameraHelper {
         };
     }
 
-    public boolean init() {
-        if (!initializeCamera())
+    public boolean init(boolean testCamera) {
+        if (!initializeCamera(testCamera))
             return false;
 
         initializeOpenCV();
@@ -71,7 +74,7 @@ public class BackgroundCameraHelper {
         }
     }
 
-    private boolean initializeCamera() {
+    private boolean initializeCamera(boolean testCamera) {
         javaCameraView = new JavaCameraView(mContext, -1);
         //javaCameraView.setMaxFrameSize(640, 480);
         javaCameraView.setVisibility(CameraBridgeViewBase.VISIBLE);
@@ -90,6 +93,8 @@ public class BackgroundCameraHelper {
         //javaCameraView.setZOrderOnTop(true);
         javaCameraView.getHolder().setFormat(PixelFormat.TRANSPARENT);
 
+        if (testCamera)
+            return testCamera();
         return true;
     }
 
@@ -97,5 +102,15 @@ public class BackgroundCameraHelper {
         javaCameraView.disableView();
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
         wm.removeView(javaCameraView);
+    }
+
+    private boolean testCamera() {
+        Camera camera = Camera.open();
+
+        if (camera == null)
+            return false;
+
+        camera.release();
+        return true;
     }
 }

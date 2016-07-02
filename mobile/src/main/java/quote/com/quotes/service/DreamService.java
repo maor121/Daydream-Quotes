@@ -1,10 +1,14 @@
 package quote.com.quotes.service;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import org.opencv.android.CameraBridgeViewBase;
@@ -19,6 +23,8 @@ import quote.com.quotes.utils.UIUpdater;
 public class DreamService extends android.service.dreams.DreamService implements CameraBridgeViewBase.CvCameraViewListener2 {
     private static final String TAG = DreamService.class.getSimpleName();
 
+    enum State {STOPPED, RUNNING_CAMERA, RUNNING_NO_CAMERA };
+
     //UI elements
     ViewGroup pnlQuote;
     TextView quoteView, sourceView;
@@ -27,6 +33,8 @@ public class DreamService extends android.service.dreams.DreamService implements
     BackgroundCameraHelper cameraHelper;
     MotionDetector detector;
     UIUpdater quotesUpdater;
+
+    State status;
 
     long lastMotionTime = 0;
 
@@ -72,8 +80,25 @@ public class DreamService extends android.service.dreams.DreamService implements
         super.onDreamingStarted();
 
         quotesUpdater = new UIUpdater(new updateQuoteRunnable(), 10*(1000*60));
+        status = State.STOPPED;
 
-        startMotionDetection();
+        if (!startMotionDetection(true)) {
+            String msg = "Camera not connected. Running without motion detection";
+            //Fallback
+            Log.d(TAG, msg);
+            pnlQuote.setVisibility(View.VISIBLE);
+            quoteView.setText(msg);
+            status = State.RUNNING_NO_CAMERA;
+
+            Handler handler = new Handler(Looper.getMainLooper());
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    quotesUpdater.startUpdates();
+                }
+            }, 8000);
+        } else
+            status = State.RUNNING_CAMERA;
     }
 
     @Override
@@ -82,7 +107,9 @@ public class DreamService extends android.service.dreams.DreamService implements
 
         quotesUpdater.stopUpdates();
 
-        stopMotionDetection();
+        if (status == State.RUNNING_CAMERA)
+            stopMotionDetection();
+        status = State.STOPPED;
     }
 
     @Override
@@ -118,7 +145,7 @@ public class DreamService extends android.service.dreams.DreamService implements
             handler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    startMotionDetection();
+                    startMotionDetection(false);
                 }
             }, CAMERA_SLEEP_WHEN_MOTION_DETECTED);
         } else { //No motion detected
@@ -141,11 +168,14 @@ public class DreamService extends android.service.dreams.DreamService implements
         return null;
     }
 
-    public void startMotionDetection() {
+    public boolean startMotionDetection(boolean testCamera) {
+        if (!cameraHelper.init(testCamera)) {
+            return false;
+        }
         detector = new MotionDetector();
-        cameraHelper.init();
-
         lastMotionTime = System.currentTimeMillis();
+
+        return true;
     }
     public void stopMotionDetection() {
         cameraHelper.releaseCamera();
