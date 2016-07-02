@@ -1,5 +1,8 @@
 apply plugin: 'com.android.model.application'
 
+def versionCodeBase = 1
+def versionCodePrefixes = ['armeabi': 1, 'armeabi-v7a': 2, 'arm64-v8a': 3, 'mips': 5, 'mips64': 6, 'x86': 8, 'x86_64': 9]
+
 model {
     android {
         compileSdkVersion = 23
@@ -8,27 +11,38 @@ model {
             applicationId = "quote.com.quotes"
             minSdkVersion.apiLevel = 17
             targetSdkVersion.apiLevel = 23
-            versionCode = 1
+            versionCode = versionCodeBase
             versionName = "1.0"
         }
         productFlavors {
             /*Project will compile without this part, but it makes the apk smaller, and thus quicker to install*/
             create("arm") {
-                ndk {
-                    abiFilters.add("armeabi")
-                }
+                ndk.abiFilters.add("armeabi")
+                versionCode = versionCodePrefixes.get("armeabi", 0) * 1000000 + versionCodeBase
             }
             create("armv7") {
-                ndk {
-                    abiFilters.add("armeabi-v7a")
-                }
+                ndk.abiFilters.add("armeabi-v7a")
+                versionCode = versionCodePrefixes.get("armeabi-v7a", 0) * 1000000 + versionCodeBase
+            }
+            create("x86") {
+                ndk.abiFilters.add("x86")
+                versionCode = versionCodePrefixes.get("x86", 0) * 1000000 + versionCodeBase
             }
         }
-        buildTypes {
-            release {
-                minifyEnabled = false
-                proguardFiles.addAll([file('proguard-android.txt'), file('proguard-rules.pro')])
-            }
+    }
+    android.signingConfigs {
+        create("config") {
+            keyAlias = '*****'
+            keyPassword = '*****'
+            storeFile = file('C:/Users/Maor/.android/****.keystore')
+            storePassword = '*****'
+        }
+    }
+    android.buildTypes {
+        release {
+            minifyEnabled = false
+            proguardFiles.addAll([file('proguard-android.txt'), file('proguard-rules.pro')])
+            signingConfig = $.android.signingConfigs.get("config")
         }
     }
 }
