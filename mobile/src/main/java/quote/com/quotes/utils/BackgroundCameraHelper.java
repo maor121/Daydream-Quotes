@@ -101,7 +101,12 @@ public class BackgroundCameraHelper {
     public void releaseCamera() {
         javaCameraView.disableView();
         WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-        wm.removeView(javaCameraView);
+        try {
+            wm.removeView(javaCameraView);
+        } catch (IllegalArgumentException e) {
+            //Not attached to window, that's fine (does not happen on TV, but happens on Phone. wonder why?)
+            Log.d(TAG, "release camera, not attached to window.");
+        }
     }
 
     private boolean testCamera() {
