@@ -39,8 +39,8 @@ public class DreamService extends android.service.dreams.DreamService implements
     long lastMotionTime = 0;
 
     //Constants
-    private long CAMERA_SLEEP_WHEN_MOTION_DETECTED = 10*1000;
-    private long MOTIONLESS_TIME_UNTIL_SLEEP = 10*1000;
+    private long CAMERA_SLEEP_WHEN_MOTION_DETECTED = 60*1000;
+    private long MOTIONLESS_TIME_UNTIL_SLEEP = 60*1000;
 
     public DreamService() {
         cameraHelper = new BackgroundCameraHelper(this, this, new onOpenCVReady());
