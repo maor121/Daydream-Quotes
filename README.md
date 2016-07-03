@@ -18,6 +18,6 @@ Motion detection
 ================
 
 The app uses OpenCV (open source computer vision library) to detect motion in the room.
-The camera will sleep for 1 minute when motion is detected (you don't want to film your room 24\7, do you?).
+The camera will sleep for 1 minute when motion is detected (you don't want to film your room 24\7, probably).
 
 If you want camera to sleep for more time, edit the constants in DreamService.java
